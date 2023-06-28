@@ -97,26 +97,20 @@ function Cross({ midpoint, countCell, maxWidth = 300, maxHeight = 300 }) {
 export default function TicTacToe({ countCell }) {
   const MAX_WIDTH = 300;
   const MAX_HEIGHT = 300;
-  // These lines define and initialize state variables using the useState hook.
-  const [isXTurn, setIsXTurn] =
-    useState(true); /*  isXTurn keeps track of whose turn it is (X or O) */
-  const [winningInfo, setWinningInfo] =
-    useState(null); /* winningInfo stores information about the winning state */
-  const [svgOffset, setSvgOffset] = useState([
-    0, 0,
-  ]); /* svgOffset holds the offset of the SVG container */
-  const svgRef =
-    useRef(null); /* svgRef is used to reference the SVG element. */
+  /* These lines define and initialize state variables using the useState hook. */
+  const [isXTurn, setIsXTurn] = useState(true); // isXTurn keeps track of whose turn it is (X or O) 
+  const [winningInfo, setWinningInfo] = useState(null); // winningInfo stores information about the winning state 
+  const [svgOffset, setSvgOffset] = useState([0, 0]); // svgOffset holds the offset of the SVG container 
+  const [isDraw, setIsDraw] = useState(false);
+  const svgRef =useRef(null); // svgRef is used to reference the SVG element.
 
-  const [gameState, setGameState] = useState(
-    Array(countCell * countCell).fill(Player.Draw)
-  ); /* the state of the Tic-Tac-Toe board, with all cells initially set to the draw state.  */
+  const [gameState, setGameState] = useState(Array(countCell * countCell).fill(Player.Draw)); // the state of the Tic-Tac-Toe board, with all cells initially set to the draw state. 
 
   useEffect(() => {
     if (svgRef.current) {
       const svgElement = svgRef.current;
       const { x, y } =
-        svgElement.getBoundingClientRect(); /*returns the position and size of an element relative to the viewport */
+        svgElement.getBoundingClientRect(); //returns the position and size of an element relative to the viewport
       setSvgOffset([x, y]);
     }
   }, []);
@@ -126,6 +120,7 @@ export default function TicTacToe({ countCell }) {
     setIsXTurn(true);
     setWinningInfo(null);
     setGameState(Array(countCell * countCell).fill(Player.Draw));
+    setIsDraw(false);
   };
 
   /* This function is to handle the event of clicking on the grid by the user */
@@ -288,7 +283,6 @@ export default function TicTacToe({ countCell }) {
         }
       }
     }
-
     return winPositions;
   };
 
@@ -299,25 +293,25 @@ export default function TicTacToe({ countCell }) {
     for (const position of winPositions) {
       const [a, b, c] = position;
       const sum = gameState[a] + gameState[b] + gameState[c];
-
       if (sum === 3) {
         /* if sum equal to 3, it means player X wins */
         return Player.X;
       } else if (sum === 0) {
         /* if sum equal to 0, it means player O wins */
         return Player.O;
+      } else {
+        if (!(gameState.includes(null) || gameState.includes(-99) || (Player.X || Player.O)) ) { // checks if there is no winner already and all cells are full 
+          setWinningInfo({ winner: Player.Draw });
+          setIsDraw(true);
+        }
       }
     }
-
-    if (!gameState.includes(null)) {
-      setWinningInfo({ winner: Player.Draw });
-    }
-
     return null;
   };
 
   /* Draw the winning line */
   const drawWinningLine = () => {
+    /* it ensures that no further changes are made to the game state or UI. */
     if (
       winningInfo &&
       winningInfo.line &&
@@ -326,6 +320,7 @@ export default function TicTacToe({ countCell }) {
     ) {
       return;
     }
+
     const winner = checkWinner();
     if (winner !== null) {
       const winPositions = generateWinPositions();
@@ -373,22 +368,18 @@ export default function TicTacToe({ countCell }) {
             />
           )}
         </svg>
-        {/* check the winner in order to write a line with the info */}
-        {winningInfo && (
+        {/* returns the winner info */}
+        {(winningInfo || isDraw) && (
           <div className="relative bottom-40">
-            {winningInfo && (
-              <div className="mt-8">
-                {winningInfo.winner === Player.Draw ? (
-                  <h2 className="text-3xl text-white font-bold">
-                    It's a draw!
-                  </h2>
-                ) : (
-                  <h2 className="text-3xl text-white font-bold">
-                    {winningInfo.winner === Player.X ? "X" : "O"} wins!
-                  </h2>
-                )}
-              </div>
-            )}
+            <div className="mt-8">
+              {isDraw ? (
+                <h2 className="text-3xl text-white font-bold">It's a draw!</h2>
+              ) : (
+                <h2 className="text-3xl text-white font-bold">
+                  {winningInfo.winner === Player.X ? "X" : "O"} wins!
+                </h2>
+              )}
+            </div>
             <button
               className="mt-4 px-4 py-2 bg-blue-500 text-white rounded"
               onClick={resetBoard}
