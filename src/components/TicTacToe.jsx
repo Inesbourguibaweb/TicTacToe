@@ -347,7 +347,7 @@ export default function TicTacToe({ countCell }) {
   /* render the page whenever there is a gameState or winningInfo modification */
   useEffect(() => {
     drawWinningLine();
-  }, [gameState, winningInfo]);
+  }, [gameState, winningInfo, drawWinningLine]);
 
   return (
     <div className="flex justify-center items-center h-screen">
